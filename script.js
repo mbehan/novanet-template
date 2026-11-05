@@ -36,23 +36,27 @@ const defaultConfig = {
     colorScheme: "dark",
     fontFamily: "system-ui, sans-serif",
     colors: {
-      background: "#292a2b",
-      backgroundDeep: "#202122",
-      panel: "#343536",
-      profilePanel: "#343536",
-      text: "#f7f2e8",
-      muted: "#a9aaa8",
-      postText: "#17191b",
+      pageBackground: "#292a2b",
+      pageText: "#f7f2e8",
+      surfaceBackground: "#343536",
       accent: "#f8d66d",
-      line: "rgba(255, 255, 255, 0.12)",
       controlBackground: "rgba(255, 255, 255, 0.055)",
-      controlBackgroundHover: "rgba(255, 255, 255, 0.12)",
-      controlText: "#f7f2e8",
-      mediaOverlayBackground: "rgba(23, 25, 27, 0.82)",
-      mediaOverlayText: "#f7f2e8",
-      shadow: "0 24px 60px rgba(0, 0, 0, 0.28)",
-      postShadow: "0 12px 0 rgba(0, 0, 0, 0.16), 0 26px 48px rgba(0, 0, 0, 0.18)",
-      postHoverShadow: "0 18px 0 rgba(0, 0, 0, 0.13), 0 34px 58px rgba(0, 0, 0, 0.28)"
+      controlHoverBackground: "rgba(255, 255, 255, 0.12)",
+      postText: "#17191b",
+      postSurfaceBackground: "#ffffff",
+      inverseBackground: "#16181b",
+      inverseText: "#f7f2e8",
+      syntaxKeyword: "#ff7b72",
+      syntaxType: "#79c0ff",
+      syntaxLiteral: "#a5d6ff",
+      syntaxComment: "#8b949e",
+      syntaxMeta: "#ffa657"
+    },
+    shadows: {
+      surface: "0 24px 60px rgba(0, 0, 0, 0.28)",
+      post: "0 12px 0 rgba(0, 0, 0, 0.16), 0 26px 48px rgba(0, 0, 0, 0.18)",
+      postHover: "0 18px 0 rgba(0, 0, 0, 0.13), 0 34px 58px rgba(0, 0, 0, 0.28)",
+      content: "0 8px 18px rgba(0, 0, 0, 0.16)"
     },
     fontSizes: {
       base: "20px",
@@ -84,7 +88,7 @@ const defaultConfig = {
       linkPreviewImage: "12px",
       control: "999px"
     },
-    postColors: []
+    postBackgrounds: ["#f8d66d"]
   },
   labels: {
     latestPosts: "latest posts",
@@ -136,8 +140,6 @@ window.addEventListener("resize", updateProfileHeadingSize);
 
 loadSiteData()
   .then((data) => {
-    siteConfig = data.config;
-    applyConfig(siteConfig);
     orderedPosts = orderPosts(data.posts);
     buildThreads();
     postColorPalette = normalizedPostColorPalette(siteConfig);
@@ -147,7 +149,7 @@ loadSiteData()
   .catch((error) => {
     console.error(error);
     postsElement.innerHTML = `
-      <article class="post post-detail" style="background: #ffb3ba; --tilt: 0deg;">
+      <article class="post post-detail" style="background: var(--post-default-background); --tilt: 0deg;">
         ${emojiTemplate({ emoji: "🧐" })}
         <div class="post-content">
           <div class="handle">${escapeHtml(profileHandle())}</div>
@@ -160,15 +162,11 @@ loadSiteData()
 
 // Settings and profile
 async function loadSiteData() {
-  const [config, posts] = await Promise.all([
-    loadJson(configPath),
-    loadJson("posts.json", { required: true })
-  ]);
-
-  return {
-    config: mergeConfig(defaultConfig, config),
-    posts
-  };
+  // Apply the theme before fetching posts so load failures use the site's colours too.
+  siteConfig = mergeConfig(defaultConfig, await loadJson(configPath));
+  applyConfig(siteConfig);
+  const posts = await loadJson("posts.json", { required: true });
+  return { config: siteConfig, posts };
 }
 
 async function loadJson(path, options = {}) {
@@ -209,6 +207,7 @@ function applyConfig(config) {
   document.documentElement.lang = config.site.language || "en";
   document.documentElement.style.colorScheme = config.theme.colorScheme || "dark";
   document.title = config.site.title || document.title;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", config.theme.colors.pageBackground);
   applyTheme(config.theme);
   applyFeatureStyles(config.features);
   renderProfile(config);
@@ -219,26 +218,30 @@ function applyConfig(config) {
 function applyTheme(theme) {
   const root = document.documentElement;
   const colors = theme.colors || {};
+  const shadows = theme.shadows || {};
   const radii = theme.radii || {};
   const fontSizes = theme.fontSizes || {};
   const variables = {
-    "--bg": colors.background,
-    "--bg-deep": colors.backgroundDeep,
-    "--panel": colors.panel,
-    "--profile-panel": colors.profilePanel,
-    "--paper": colors.text,
-    "--ink": colors.postText,
+    "--page-background": colors.pageBackground,
+    "--page-text": colors.pageText,
+    "--surface-background": colors.surfaceBackground,
     "--accent": colors.accent,
-    "--muted": colors.muted,
-    "--line": colors.line,
-    "--control-bg": colors.controlBackground,
-    "--control-bg-hover": colors.controlBackgroundHover,
-    "--control-text": colors.controlText,
-    "--media-overlay-bg": colors.mediaOverlayBackground,
-    "--media-overlay-text": colors.mediaOverlayText,
-    "--shadow": colors.shadow,
-    "--post-shadow": colors.postShadow,
-    "--post-hover-shadow-config": colors.postHoverShadow,
+    "--control-background": colors.controlBackground,
+    "--control-hover-background": colors.controlHoverBackground,
+    "--post-text": colors.postText,
+    "--post-surface": colors.postSurfaceBackground,
+    "--inverse-background": colors.inverseBackground,
+    "--inverse-text": colors.inverseText,
+    "--syntax-keyword": colors.syntaxKeyword,
+    "--syntax-type": colors.syntaxType,
+    "--syntax-literal": colors.syntaxLiteral,
+    "--syntax-comment": colors.syntaxComment,
+    "--syntax-meta": colors.syntaxMeta,
+    "--surface-shadow": shadows.surface,
+    "--post-shadow": shadows.post,
+    "--post-hover-shadow-config": shadows.postHover,
+    "--content-shadow": shadows.content,
+    "--post-default-background": normalizedPostColorPalette({ theme })[0],
     "--radius": radii.card,
     "--profile-photo-radius": radii.profilePhoto,
     "--emoji-radius": radii.emoji,
@@ -424,7 +427,7 @@ function renderSinglePost(post) {
   if (!post) {
     postsElement.innerHTML = `
       ${detailNavTemplate()}
-      <article class="post" style="background: #ffb3ba; --tilt: 0deg;">
+      <article class="post" style="background: var(--post-default-background); --tilt: 0deg;">
         ${emojiTemplate({ emoji: "🧐" })}
         <div class="post-content">
           <div class="handle">${escapeHtml(profileHandle())}</div>
@@ -437,7 +440,7 @@ function renderSinglePost(post) {
   }
 
   const rootPost = postsById.get(threadRootId(post)) || post;
-  const color = detailColor || getPostColor(rootPost, orderedPosts.indexOf(rootPost));
+  const color = configuredDetailColor() || getPostColor(rootPost, orderedPosts.indexOf(rootPost));
   postsElement.innerHTML = `
     ${detailNavTemplate(post)}
     ${threadTemplate(threadPostsForPost(post), false, color, post.id)}
@@ -521,8 +524,12 @@ function threadTemplate(posts, isLink, color, selectedPostId = "") {
   const parentLinkAttributes = isLink
     ? `data-post-id="${escapeHtml(rootPost.id)}" data-post-color="${escapeHtml(background)}" role="link" tabindex="0" aria-label="Open thread by ${escapeHtml(profileHandle())}"`
     : selectedPostId === rootPost.id ? 'aria-current="true"' : "";
+  const parentClassName = [
+    "post-thread-parent-main",
+    isLink ? "post-thread-parent-link" : detailLayoutClass(rootPost)
+  ].filter(Boolean).join(" ");
   const parentMarkup = `
-    <div class="post-thread-parent-main${isLink ? " post-thread-parent-link" : ""}" ${parentLinkAttributes}>
+    <div class="${parentClassName}" ${parentLinkAttributes}>
       ${postEmoji}
       <div class="post-content">
         <div class="post-meta">
@@ -558,8 +565,13 @@ function threadTemplate(posts, isLink, color, selectedPostId = "") {
   return `<article class="${className}" style="background: ${background}; --tilt: ${tilt}deg;">${parentMarkup}${childrenMarkup}</article>`;
 }
 
+// Multi-block detail cards keep the introduction beside the emoji, then span both columns.
+function detailLayoutClass(post, isPreview = false) {
+  return !isPreview && normalizeContentBlocks(post.content).length > 1 ? "post-detail-expanded" : "";
+}
+
 function postTemplate(post, index, isLink, colorOverride, options = {}) {
-  const background = colorOverride || (!isLink && detailColor ? detailColor : getPostColor(post, index));
+  const background = colorOverride || (!isLink && configuredDetailColor() ? configuredDetailColor() : getPostColor(post, index));
   const tilt = ((index % 5) - 2) * 0.35;
   const showPostEmoji = siteConfig.features.postEmoji !== false;
   const showPostHandle = siteConfig.features.postHandle !== false;
@@ -569,12 +581,11 @@ function postTemplate(post, index, isLink, colorOverride, options = {}) {
     showPostEmoji ? "" : "post-no-emoji",
     post.pinned ? "post-pinned" : "",
     options.embeddedChild ? "post-thread-child" : "",
+    detailLayoutClass(post, isLink),
     options.embeddedChild && isLink ? "post-thread-child-link" : ""
   ].filter(Boolean).join(" ");
   const postEmoji = showPostEmoji
-    ? options.embeddedChild
-      ? threadReplyIconTemplate()
-      : emojiTemplate(post, isLink && siteConfig.features.filterByEmoji !== false)
+    ? emojiTemplate(post, isLink && siteConfig.features.filterByEmoji !== false)
     : "";
   const postHandle = showPostHandle
     ? `<div class="handle">${escapeHtml(profileHandle())}</div>`
@@ -753,7 +764,7 @@ function feedFilterTemplate(count) {
 
 function emptyFilterTemplate() {
   return `
-    <article class="post post-detail" style="background: #ffb3ba; --tilt: 0deg;">
+    <article class="post post-detail" style="background: var(--post-default-background); --tilt: 0deg;">
       ${emojiTemplate({ emoji: "🧐" })}
       <div class="post-content">
         <div class="handle">${escapeHtml(profileHandle())}</div>
@@ -1425,20 +1436,6 @@ function emojiTemplate(post, isFilterable = false) {
   `;
 }
 
-function threadReplyIconTemplate() {
-  const icon = "🧵";
-  const filename = useOpenMoji() ? openMojiFilename(icon) : "";
-  const iconMarkup = filename
-    ? `<img src="${escapeHtml(sharedAssetPath)}openmoji/${filename}.svg" alt="">`
-    : escapeHtml(icon);
-
-  return `
-    <div class="post-emoji post-thread-reply-icon" role="img" aria-label="${escapeHtml(labelText("threadReply"))}">
-      ${iconMarkup}
-    </div>
-  `;
-}
-
 function postIconKey(post) {
   return post.emoji || "";
 }
@@ -1602,13 +1599,13 @@ function getSessionPostColors() {
 
   const stored = readSessionJson("post-colors");
   const storageKey = JSON.stringify(postColorPalette);
-  const palette = stored?.key === storageKey && Array.isArray(stored?.palette) && stored.palette.length === postColorPalette.length
-    ? stored.palette
-    : shuffle([...postColorPalette]);
-  const colors = stored?.colors && typeof stored.colors === "object" ? stored.colors : {};
+  const matchesPalette = stored?.key === storageKey && Array.isArray(stored?.palette)
+    && JSON.stringify([...stored.palette].sort()) === JSON.stringify([...postColorPalette].sort());
+  const palette = matchesPalette ? stored.palette : shuffle([...postColorPalette]);
+  const colors = matchesPalette && stored?.colors && typeof stored.colors === "object" ? stored.colors : {};
 
   for (const [index, post] of orderedPosts.entries()) {
-    if (!colors[post.id]) {
+    if (!postColorPalette.includes(colors[post.id])) {
       colors[post.id] = palette[index % palette.length];
     }
   }
@@ -1624,7 +1621,7 @@ function getPostColor(post, index) {
   }
 
   if (!postColorPalette.length) {
-    return "#f8d66d";
+    return normalizedPostColorPalette(siteConfig)[0];
   }
 
   if (postColorPalette.length === 1) {
@@ -1657,32 +1654,12 @@ function postColorsForFeed(feedPosts) {
 }
 
 function relatedPostColor(color) {
-  const hex = normalizeHexColor(color);
-
-  if (!hex) {
-    return "rgba(255, 255, 255, 0.42)";
-  }
-
-  const channels = [
-    Number.parseInt(hex.slice(0, 2), 16),
-    Number.parseInt(hex.slice(2, 4), 16),
-    Number.parseInt(hex.slice(4, 6), 16)
-  ];
-  const mixed = channels.map((channel) => Math.round(channel * 0.86 + 255 * 0.14));
-  return `rgb(${mixed.join(", ")})`;
+  // Mixing CSS colours preserves named, RGB/HSL, alpha and custom-property palettes.
+  return `color-mix(in srgb, ${color} 86%, var(--post-surface) 14%)`;
 }
 
-function normalizeHexColor(value) {
-  const match = String(value || "").trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
-
-  if (!match) {
-    return "";
-  }
-
-  const hex = match[1];
-  return hex.length === 3
-    ? hex.split("").map((character) => character + character).join("").toLowerCase()
-    : hex.toLowerCase();
+function configuredDetailColor() {
+  return postColorPalette.includes(detailColor) ? detailColor : "";
 }
 
 function nextPostColor(currentColor, index) {
@@ -1704,9 +1681,10 @@ function nextPostColor(currentColor, index) {
 }
 
 function normalizedPostColorPalette(config) {
-  return Array.isArray(config.theme?.postColors)
-    ? config.theme.postColors.filter((color) => typeof color === "string" && color.trim()).map((color) => color.trim())
+  const palette = Array.isArray(config.theme?.postBackgrounds)
+    ? config.theme.postBackgrounds.filter((color) => typeof color === "string" && color.trim()).map((color) => color.trim())
     : [];
+  return palette.length ? palette : [...defaultConfig.theme.postBackgrounds];
 }
 
 function shuffle(items) {
@@ -1854,7 +1832,7 @@ function postUrl(post, index, colorOverride) {
   const params = new URLSearchParams({ post: post.id });
   const currentPost = postsById.get(postId);
   const sameThread = currentPost && threadRootId(currentPost) === threadRootId(post);
-  const color = colorOverride || (sameThread && detailColor) || getPostColor(post, index);
+  const color = colorOverride || (sameThread && configuredDetailColor()) || getPostColor(post, index);
   const page = Number.parseInt(searchParams.get("page") || "1", 10);
 
   if (color) {

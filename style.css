@@ -1,24 +1,39 @@
 /* Theme fallbacks. config.json supplies values through script.js; layout lives here. */
 :root {
   color-scheme: dark;
-  --bg: #292a2b;
-  --bg-deep: #202122;
-  --ink: #17191b;
-  --paper: #f7f2e8;
-  --panel: #343536;
-  --profile-panel: var(--panel);
-  --muted: #a9aaa8;
-  --line: rgba(255, 255, 255, 0.12);
-  --control-bg: rgba(255, 255, 255, 0.055);
-  --control-bg-hover: rgba(255, 255, 255, 0.12);
-  --control-text: var(--paper);
-  --media-overlay-bg: rgba(23, 25, 27, 0.82);
-  --media-overlay-text: var(--paper);
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  accent-color: var(--accent);
+  scrollbar-color: var(--page-text) var(--page-background);
+  --page-background: #292a2b;
+  --page-text: #f7f2e8;
+  --surface-background: #343536;
+  --accent: #f8d66d;
+  --control-background: rgba(255, 255, 255, 0.055);
+  --control-hover-background: rgba(255, 255, 255, 0.12);
+  --post-text: #17191b;
+  --post-surface: #ffffff;
+  --inverse-background: #16181b;
+  --inverse-text: #f7f2e8;
+  --syntax-keyword: #ff7b72;
+  --syntax-type: #79c0ff;
+  --syntax-literal: #a5d6ff;
+  --syntax-comment: #8b949e;
+  --syntax-meta: #ffa657;
+  --page-muted-text: color-mix(in srgb, var(--page-text) 68%, transparent);
+  --page-border: color-mix(in srgb, var(--page-text) 14%, transparent);
+  --post-muted-text: color-mix(in srgb, var(--post-text) 72%, transparent);
+  --post-border: color-mix(in srgb, var(--post-text) 16%, transparent);
+  --post-surface-background: color-mix(in srgb, var(--post-surface) 38%, transparent);
+  --post-surface-hover-background: color-mix(in srgb, var(--post-surface) 58%, transparent);
+  --inverse-muted-text: color-mix(in srgb, var(--inverse-text) 76%, transparent);
+  --inverse-border: color-mix(in srgb, var(--inverse-text) 14%, transparent);
+  --inverse-surface-background: color-mix(in srgb, var(--inverse-text) 6%, transparent);
+  --media-overlay-background: color-mix(in srgb, var(--inverse-background) 82%, transparent);
+  --post-default-background: #f8d66d;
+  --surface-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
   --post-shadow: 0 12px 0 rgba(0, 0, 0, 0.16), 0 26px 48px rgba(0, 0, 0, 0.18);
   --post-hover-shadow-config: 0 18px 0 rgba(0, 0, 0, 0.13), 0 34px 58px rgba(0, 0, 0, 0.28);
+  --content-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
   --post-hover-shadow: var(--post-hover-shadow-config);
-  --accent: #f8d66d;
   --radius: 24px;
   --profile-photo-radius: 26px;
   --emoji-radius: 20px;
@@ -49,10 +64,16 @@
   --post-hover-rotation: -0.8deg;
 }
 
+/* Selection uses the same accent/page contrast pair as interface highlights. */
+::selection {
+  background: var(--accent);
+  color: var(--page-background);
+}
+
 /* Page layout and profile */
 html {
   min-height: 100%;
-  background-color: var(--bg-deep);
+  background-color: var(--page-background);
 }
 
 * {
@@ -64,8 +85,8 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   margin: 0;
-  background: var(--bg);
-  color: var(--paper);
+  background: var(--page-background);
+  color: var(--page-text);
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   line-height: 1.45;
@@ -100,10 +121,10 @@ a {
   display: grid;
   gap: 1rem;
   padding: var(--profile-padding);
-  background: var(--profile-panel);
-  border: 1px solid var(--line);
+  background: var(--surface-background);
+  border: 1px solid var(--page-border);
   border-radius: var(--radius);
-  box-shadow: var(--shadow);
+  box-shadow: var(--surface-shadow);
 }
 
 .profile-photo {
@@ -111,7 +132,7 @@ a {
   aspect-ratio: 1;
   object-fit: cover;
   border-radius: var(--profile-photo-radius);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26);
+  box-shadow: var(--content-shadow);
 }
 
 .profile-content {
@@ -122,7 +143,7 @@ a {
 
 .eyebrow {
   margin: 0;
-  color: var(--muted);
+  color: var(--page-muted-text);
   font-size: var(--font-size-feed-label);
   font-weight: 900;
   letter-spacing: 0.11em;
@@ -178,10 +199,10 @@ a {
   gap: 0.35rem;
   min-height: 2.15rem;
   padding: 0.35rem 0.75rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--page-border);
   border-radius: var(--control-radius);
-  color: var(--control-text);
-  background: var(--control-bg);
+  color: var(--page-text);
+  background: var(--control-background);
   font-size: var(--font-size-small);
   font-weight: 800;
   text-decoration: none;
@@ -189,7 +210,7 @@ a {
 
 .profile-links a:hover,
 .profile-links a:focus-visible {
-  background: var(--control-bg-hover);
+  background: var(--control-hover-background);
   outline: none;
 }
 
@@ -218,10 +239,10 @@ a {
   width: fit-content;
   min-height: 2.5rem;
   padding: 0.35rem 0.85rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--page-border);
   border-radius: var(--control-radius);
-  color: var(--control-text);
-  background: var(--control-bg);
+  color: var(--page-text);
+  background: var(--control-background);
   text-decoration: none;
   font-size: var(--font-size-control);
   font-weight: 900;
@@ -256,7 +277,7 @@ a {
 
 .feed-pagination-count,
 .feed-pagination-page {
-  color: var(--muted);
+  color: var(--page-muted-text);
   font-size: var(--font-size-small);
   font-weight: 900;
 }
@@ -277,10 +298,10 @@ a {
   width: fit-content;
   min-height: 2.5rem;
   padding: 0.35rem 0.85rem;
-  border: 1px solid var(--line);
+  border: 1px solid var(--page-border);
   border-radius: var(--control-radius);
-  color: var(--control-text);
-  background: var(--control-bg);
+  color: var(--page-text);
+  background: var(--control-background);
   text-decoration: none;
   font-size: var(--font-size-control);
   font-weight: 900;
@@ -288,7 +309,7 @@ a {
 
 .feed-pagination-link:not(.feed-pagination-link-disabled):hover,
 .feed-pagination-link:not(.feed-pagination-link-disabled):focus-visible {
-  background: var(--control-bg-hover);
+  background: var(--control-hover-background);
   outline: none;
 }
 
@@ -298,7 +319,7 @@ a {
 
 /* Post cards and their replies */
 .post-pinned {
-  outline: 2px solid rgba(255, 255, 255, 0.62);
+  outline: 2px solid var(--post-surface);
   outline-offset: 5px;
 }
 
@@ -308,7 +329,7 @@ a {
   gap: 1rem;
   width: 100%;
   padding: clamp(1rem, 2.4vw, 1.35rem);
-  color: var(--ink);
+  color: var(--post-text);
   text-align: left;
   text-decoration: none;
   border: 0;
@@ -354,7 +375,6 @@ a {
   min-width: 0;
   margin-top: 0;
   padding-top: 0.9rem;
-  border-top: 2px solid color-mix(in srgb, var(--ink) 14%, transparent);
 }
 
 .post-thread-child {
@@ -364,9 +384,9 @@ a {
   width: 100%;
   max-width: 100%;
   padding: 0.85rem;
-  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border: 1px solid var(--post-border);
   border-radius: calc(var(--radius) * 0.75);
-  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--content-shadow);
   transition: none;
 }
 
@@ -378,18 +398,7 @@ a {
   width: 2.85rem;
   height: 2.85rem;
   border-radius: calc(var(--emoji-radius) * 0.6);
-}
-
-.post-thread-reply-icon {
-  color: inherit;
-  font-family: var(--font-family);
   font-size: 1.55rem;
-  font-weight: 900;
-}
-
-.post-thread-reply-icon img {
-  width: 70%;
-  height: 70%;
 }
 
 .post-thread-child .post-body {
@@ -456,7 +465,7 @@ a {
   padding: 0;
   border: 0;
   border-radius: var(--emoji-radius);
-  background: rgba(255, 255, 255, 0.42);
+  background: var(--post-surface-background);
   color: inherit;
   font-family: "OpenMoji", "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
   font-size: var(--font-size-post-emoji);
@@ -470,9 +479,9 @@ a {
 
 .emoji-filter-button:hover,
 .emoji-filter-button:focus-visible {
-  background: rgba(255, 255, 255, 0.58);
+  background: var(--post-surface-hover-background);
   transform: scale(1.04);
-  outline: 3px solid rgba(23, 25, 27, 0.28);
+  outline: 3px solid var(--post-text);
   outline-offset: 3px;
 }
 
@@ -517,8 +526,8 @@ a {
   gap: 0.25rem;
   padding: 0.18rem 0.48rem;
   border-radius: var(--control-radius);
-  background: rgba(255, 255, 255, 0.38);
-  color: rgba(23, 25, 27, 0.78);
+  background: var(--post-surface-background);
+  color: var(--post-muted-text);
   font-size: var(--font-size-badge);
   font-weight: 900;
   text-transform: uppercase;
@@ -543,8 +552,8 @@ a {
 
 .post-body .post-quote {
   padding-left: 0.85rem;
-  border-left: 0.18rem solid rgba(23, 25, 27, 0.72);
-  color: rgba(23, 25, 27, 0.78);
+  border-left: 0.18rem solid var(--post-muted-text);
+  color: var(--post-muted-text);
   font-style: italic;
 }
 
@@ -564,10 +573,10 @@ a {
 .post-body p code {
   display: inline;
   padding: 0.08em 0.28em 0.12em;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid var(--inverse-border);
   border-radius: 0.32em;
-  color: #f7f2e8;
-  background: #16181b;
+  color: var(--inverse-text);
+  background: var(--inverse-background);
   font-family: "SFMono-Regular", "SF Mono", "Menlo", "Consolas", monospace;
   font-size: 0.78em;
   font-weight: 700;
@@ -632,10 +641,50 @@ a {
   margin-top: 1.15rem;
 }
 
+/* Detail blocks share the card grid so only the introduction reserves an emoji column. */
+.post-detail-expanded > .post-content,
+.post-detail-expanded > .post-content > .post-body {
+  display: contents;
+}
+
+.post-detail-expanded > .post-emoji {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+}
+
+.post-detail-expanded:has(> .post-content > .post-body > .post-paragraph:first-child) > .post-emoji {
+  grid-row: 2;
+}
+
+.post-detail-expanded > .post-content > .post-meta {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.post-detail-expanded > .post-content > .post-body > *,
+.post-detail-expanded > .post-content > .date {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin-top: 0;
+}
+
+.post-detail-expanded > .post-content > .post-body > .post-paragraph:first-child {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.post-detail-expanded.post-no-emoji > .post-content > .post-meta,
+.post-detail-expanded.post-no-emoji > .post-content > .post-body > .post-paragraph:first-child,
+.post-no-emoji .post-detail-expanded > .post-content > .post-meta,
+.post-no-emoji .post-detail-expanded > .post-content > .post-body > .post-paragraph:first-child {
+  grid-column: 1 / -1;
+}
+
 .read-more {
   display: inline-flex;
   margin-top: 0.85rem;
-  color: rgba(23, 25, 27, 0.66);
+  color: var(--post-muted-text);
   font-size: var(--font-size-control);
   font-weight: 900;
 }
@@ -734,8 +783,8 @@ a {
   display: grid;
   place-items: center;
   border-radius: inherit;
-  background: var(--media-overlay-bg);
-  color: var(--media-overlay-text);
+  background: var(--media-overlay-background);
+  color: var(--inverse-text);
   font-size: var(--font-size-post-emoji-mobile);
   font-weight: 900;
   line-height: 1;
@@ -757,11 +806,11 @@ a {
   min-width: 0;
   justify-self: stretch;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid var(--inverse-border);
   border-radius: var(--media-radius);
-  background: #16181b;
-  color: #f7f2e8;
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.16);
+  background: var(--inverse-background);
+  color: var(--inverse-text);
+  box-shadow: var(--content-shadow);
 }
 
 .post-code-header {
@@ -775,9 +824,9 @@ a {
   align-items: center;
   min-height: 2.25rem;
   padding: 0.45rem 0.8rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  color: rgba(247, 242, 232, 0.76);
-  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--inverse-border);
+  color: var(--inverse-muted-text);
+  background: var(--inverse-surface-background);
   font-size: var(--font-size-badge);
   font-weight: 900;
   letter-spacing: 0.08em;
@@ -796,7 +845,7 @@ a {
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: #f7f2e8;
+  color: var(--inverse-text);
   cursor: pointer;
 }
 
@@ -806,7 +855,7 @@ a {
 
 .post-code-wrap-toggle:hover,
 .post-code-wrap-toggle[aria-pressed="true"] {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--inverse-border);
 }
 
 .post-code-wrap-toggle:focus-visible {
@@ -823,6 +872,7 @@ a {
 }
 
 .post-code pre {
+  scrollbar-color: var(--inverse-text) var(--inverse-background);
   display: block;
   width: 100%;
   max-width: 100%;
@@ -845,25 +895,25 @@ a {
 .post-code .keyword,
 .post-code .call,
 .post-code .property {
-  color: #ff7b72;
+  color: var(--syntax-keyword);
 }
 
 .post-code .type {
-  color: #79c0ff;
+  color: var(--syntax-type);
 }
 
 .post-code .string,
 .post-code .number {
-  color: #a5d6ff;
+  color: var(--syntax-literal);
 }
 
 .post-code .comment {
-  color: #8b949e;
+  color: var(--syntax-comment);
 }
 
 .post-code .dotAccess,
 .post-code .preprocessing {
-  color: #ffa657;
+  color: var(--syntax-meta);
 }
 
 /* Video and link previews */
@@ -891,8 +941,8 @@ a {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--media-overlay-bg);
-  color: var(--media-overlay-text);
+  background: var(--media-overlay-background);
+  color: var(--inverse-text);
   font-size: var(--font-size-footer);
   font-weight: 900;
 }
@@ -904,7 +954,7 @@ a {
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 50%;
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--content-shadow);
 }
 
 .play-badge::before {
@@ -936,9 +986,9 @@ a {
   grid-template-columns: minmax(4.8rem, 7rem) minmax(0, 1fr);
   gap: 0.75rem;
   padding: 0.7rem;
-  border: 1px solid rgba(23, 25, 27, 0.18);
+  border: 1px solid var(--post-border);
   border-radius: var(--link-preview-radius);
-  background: rgba(255, 255, 255, 0.34);
+  background: var(--post-surface-background);
   color: inherit;
   text-decoration: none;
 }
@@ -971,7 +1021,7 @@ a {
 
 .link-preview-site,
 .link-preview-description {
-  color: rgba(23, 25, 27, 0.66);
+  color: var(--post-muted-text);
   font-size: var(--font-size-link-preview-meta);
   font-weight: 800;
   line-height: 1.1;
@@ -989,7 +1039,7 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  color: rgba(23, 25, 27, 0.72);
+  color: var(--post-muted-text);
   font-size: var(--font-size-small);
   font-weight: 800;
 }
@@ -1022,16 +1072,16 @@ a {
   align-items: baseline;
   gap: 0.75rem 2rem;
   padding: 1.25rem 0 2rem;
-  border-top: 1px solid var(--line);
-  color: var(--muted);
+  border-top: 1px solid var(--page-border);
+  color: var(--page-muted-text);
   font-size: var(--font-size-footer);
   font-weight: 600;
 }
 
 .site-footer a {
-  color: var(--paper);
+  color: var(--page-text);
   font-weight: 600;
-  text-decoration-color: var(--line);
+  text-decoration-color: var(--page-border);
   text-underline-offset: 0.2em;
 }
 
@@ -1110,9 +1160,6 @@ a {
   .post-thread-child .post-emoji {
     width: 2.55rem;
     height: 2.55rem;
-  }
-
-  .post-thread-reply-icon {
     font-size: 1.4rem;
   }
 

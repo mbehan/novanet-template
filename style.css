@@ -650,11 +650,11 @@ a {
 .post-detail-expanded > .post-emoji {
   grid-column: 1;
   grid-row: 1;
-  align-self: center;
+  align-self: start;
 }
 
 .post-detail-expanded:has(> .post-content > .post-body > .post-paragraph:first-child) > .post-emoji {
-  grid-row: 2;
+  grid-row: 1 / span 2;
 }
 
 .post-detail-expanded > .post-content > .post-meta {

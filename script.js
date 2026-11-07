@@ -59,25 +59,18 @@ const defaultConfig = {
       content: "0 8px 18px rgba(0, 0, 0, 0.16)"
     },
     fontSizes: {
-      base: "20px",
-      baseMobile: "18px",
-      feedLabel: "0.78rem",
+      defaultText: "20px",
+      defaultTextMobile: "18px",
       profileHeading: "2.2rem",
       profileHeadingMobile: "2.2rem",
-      feedHeading: "clamp(2.2rem, 6vw, 4.5rem)",
-      profileBody: "1.15rem",
-      control: "1rem",
-      small: "0.95rem",
-      meta: "1rem",
-      badge: "0.82rem",
+      profileBio: "1.15rem",
+      postText: "clamp(1.3rem, 2.6vw, 1.75rem)",
+      postBody: "clamp(1.02rem, 1.7vw, 1.22rem)",
+      supportingText: "1rem",
       code: "0.85rem",
-      postBody: "clamp(1.3rem, 2.6vw, 1.75rem)",
-      postBodyLong: "clamp(1.02rem, 1.7vw, 1.22rem)",
       postEmoji: "3.15rem",
       postEmojiMobile: "2.55rem",
-      linkPreviewMeta: "0.92rem",
-      linkPreviewTitle: "1.05rem",
-      footer: "0.9rem"
+      overrides: {}
     },
     radii: {
       card: "24px",
@@ -98,12 +91,47 @@ const defaultConfig = {
     pinned: "Pinned",
     thread: "Thread",
     threadReplies: "Thread replies",
-    threadReply: "Thread reply",
     wrapCode: "Wrap code",
     unwrapCode: "Unwrap code",
     missingPost: "That post seems to have wandered off.",
     emptyFilter: "Nothing in the feed matches that icon.",
-    loadError: "Posts could not be loaded."
+    loadError: "Posts could not be loaded.",
+    previousPage: "← Previous",
+    nextPage: "Next →",
+    moreInside: "More inside",
+    pageStatus: "Page {page} of {pages}",
+    postRange: "{start}-{end} of {total}",
+    postCountOne: "{count} post",
+    postCountOther: "{count} posts",
+    today: "today",
+    daysAgoOne: "{count} day ago",
+    daysAgoOther: "{count} days ago",
+    code: "Code",
+    video: "Video",
+    videoPreview: "Video preview",
+    playVideo: "Play video",
+    galleryCount: "+{count}",
+    moreImagesOne: "{count} more image",
+    moreImagesOther: "{count} more images",
+    profileRegion: "Profile",
+    postsRegion: "Posts",
+    profileDetails: "Profile details",
+    feedsNavigation: "Feeds",
+    postNavigation: "Post navigation",
+    feedFilter: "Feed filter",
+    feedPagination: "Feed pagination",
+    openPost: "Open post by {author}",
+    openThread: "Open thread by {author}",
+    openThreadReply: "Open thread reply by {author}",
+    filterPosts: "Filter posts by {icon}",
+    clearFilter: "Clear {icon} filter",
+    icon: "icon",
+    thisIcon: "this icon",
+    photoPost: "Photo post",
+    videoPost: "Video post",
+    postBy: "Post by {author}",
+    rssTitle: "{title} RSS",
+    jsonFeedTitle: "{title} JSON Feed"
   }
 };
 
@@ -154,7 +182,7 @@ loadSiteData()
         <div class="post-content">
           <div class="handle">${escapeHtml(profileHandle())}</div>
           <p class="post-body">${escapeHtml(labelText("loadError"))}</p>
-          <time class="date">${uiEmojiTemplate("🕒", "")} today</time>
+          <time class="date">${uiEmojiTemplate("🕒", "")} ${escapeHtml(labelText("today"))}</time>
         </div>
       </article>
     `;
@@ -210,6 +238,8 @@ function applyConfig(config) {
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", config.theme.colors.pageBackground);
   applyTheme(config.theme);
   applyFeatureStyles(config.features);
+  profileElement?.setAttribute("aria-label", labelText("profileRegion"));
+  postsElement.setAttribute("aria-label", labelText("postsRegion"));
   renderProfile(config);
   renderFooter(config);
 }
@@ -250,29 +280,56 @@ function applyTheme(theme) {
     "--link-preview-image-radius": radii.linkPreviewImage,
     "--control-radius": radii.control,
     "--font-family": theme.fontFamily,
-    "--font-size-base": fontSizes.base,
-    "--font-size-base-mobile": fontSizes.baseMobile,
-    "--font-size-feed-label": fontSizes.feedLabel,
+    "--font-size-default-text": fontSizes.defaultText,
+    "--font-size-default-text-mobile": fontSizes.defaultTextMobile,
     "--font-size-profile-heading": fontSizes.profileHeading,
     "--font-size-profile-heading-mobile": fontSizes.profileHeadingMobile,
-    "--font-size-feed-heading": fontSizes.feedHeading,
-    "--font-size-profile-body": fontSizes.profileBody,
-    "--font-size-control": fontSizes.control,
-    "--font-size-small": fontSizes.small,
-    "--font-size-meta": fontSizes.meta,
-    "--font-size-badge": fontSizes.badge,
-    "--font-size-code": fontSizes.code,
+    "--font-size-profile-bio": fontSizes.profileBio,
+    "--font-size-post-text": fontSizes.postText,
     "--font-size-post-body": fontSizes.postBody,
-    "--font-size-post-body-long": fontSizes.postBodyLong,
+    "--font-size-supporting-text": fontSizes.supportingText,
+    "--font-size-code": fontSizes.code,
     "--font-size-post-emoji": fontSizes.postEmoji,
-    "--font-size-post-emoji-mobile": fontSizes.postEmojiMobile,
-    "--font-size-link-preview-meta": fontSizes.linkPreviewMeta,
-    "--font-size-link-preview-title": fontSizes.linkPreviewTitle,
-    "--font-size-footer": fontSizes.footer
+    "--font-size-post-emoji-mobile": fontSizes.postEmojiMobile
   };
 
   for (const [name, value] of Object.entries(variables)) {
-    if (value) {
+    // A reset or invalid size falls back to CSS instead of retaining a previous preview.
+    if (name.startsWith("--font-size-")) {
+      root.style.removeProperty(name);
+    }
+    if (value && (!name.startsWith("--font-size-") || CSS.supports("font-size", value))) {
+      root.style.setProperty(name, value);
+    }
+  }
+
+  // Removing an override restores the stylesheet's proportional default.
+  const overrides = fontSizes.overrides || {};
+  const textOverrides = {
+    "--font-size-navigation-text": overrides.navigationText,
+    "--font-size-post-handle": overrides.postHandle,
+    "--font-size-profile-links": overrides.profileLinks,
+    "--font-size-pagination-text": overrides.paginationText,
+    "--font-size-post-date": overrides.postDate,
+    "--font-size-link-title": overrides.linkTitle,
+    "--font-size-link-description": overrides.linkDescription,
+    "--font-size-footer-text": overrides.footerText,
+    "--font-size-video-label": overrides.videoLabel,
+    "--font-size-pinned-label": overrides.pinnedLabel,
+    "--font-size-code-label": overrides.codeLabel,
+    "--font-size-feed-label": overrides.feedLabel,
+    "--font-size-gallery-count": overrides.galleryCount,
+    "--font-size-inline-code": overrides.inlineCode,
+    "--font-size-follow-up-text": overrides.followUpText,
+    "--font-size-follow-up-body": overrides.followUpBody,
+    "--font-size-follow-up-handle": overrides.followUpHandle,
+    "--font-size-follow-up-date": overrides.followUpDate,
+    "--font-size-follow-up-emoji": overrides.followUpEmoji,
+    "--font-size-follow-up-emoji-mobile": overrides.followUpEmojiMobile
+  };
+  for (const [name, value] of Object.entries(textOverrides)) {
+    root.style.removeProperty(name);
+    if (typeof value === "string" && CSS.supports("font-size", value)) {
       root.style.setProperty(name, value);
     }
   }
@@ -347,7 +404,7 @@ function profileDetailsTemplate(profile, config) {
   }
 
   return rows.length
-    ? `<div class="profile-links" aria-label="Profile details">${rows.join("")}</div>`
+    ? `<div class="profile-links" aria-label="${escapeHtml(labelText("profileDetails"))}">${rows.join("")}</div>`
     : "";
 }
 
@@ -379,7 +436,7 @@ function renderFooter(config) {
     .map((link) => `<a href="${escapeHtml(link.url)}">${escapeHtml(link.label)}</a>`)
     .join("");
   const feeds = feedLinks
-    ? `<nav class="footer-feed-links" aria-label="Feeds">${feedLinks}</nav>`
+    ? `<nav class="footer-feed-links" aria-label="${escapeHtml(labelText("feedsNavigation"))}">${feedLinks}</nav>`
     : "";
   const attribution = config.features.openmoji
     ? `<p class="footer-attribution">Emoji artwork by <a href="https://openmoji.org/">OpenMoji</a> · <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a></p>`
@@ -432,7 +489,7 @@ function renderSinglePost(post) {
         <div class="post-content">
           <div class="handle">${escapeHtml(profileHandle())}</div>
           <p class="post-body">${escapeHtml(labelText("missingPost"))}</p>
-          <time class="date">${uiEmojiTemplate("🕒", "")} today</time>
+          <time class="date">${uiEmojiTemplate("🕒", "")} ${escapeHtml(labelText("today"))}</time>
         </div>
       </article>
     `;
@@ -450,7 +507,7 @@ function renderSinglePost(post) {
 function detailNavTemplate(post) {
   if (!post) {
     return `
-      <nav class="detail-nav" aria-label="Post navigation">
+      <nav class="detail-nav" aria-label="${escapeHtml(labelText("postNavigation"))}">
         <div class="detail-nav-left">
           <a class="detail-nav-link" href="${detailBackUrl()}">${escapeHtml(labelText("backToFeed"))}</a>
         </div>
@@ -469,7 +526,7 @@ function detailNavTemplate(post) {
     : "";
 
   return `
-    <nav class="detail-nav" aria-label="Post navigation">
+    <nav class="detail-nav" aria-label="${escapeHtml(labelText("postNavigation"))}">
       <div class="detail-nav-left">
         <a class="detail-nav-link" href="${detailBackUrl()}">${escapeHtml(labelText("backToFeed"))}</a>
       </div>
@@ -522,7 +579,7 @@ function threadTemplate(posts, isLink, color, selectedPostId = "") {
     ? `<div class="handle">${escapeHtml(profileHandle())}</div>`
     : "";
   const parentLinkAttributes = isLink
-    ? `data-post-id="${escapeHtml(rootPost.id)}" data-post-color="${escapeHtml(background)}" role="link" tabindex="0" aria-label="Open thread by ${escapeHtml(profileHandle())}"`
+    ? `data-post-id="${escapeHtml(rootPost.id)}" data-post-color="${escapeHtml(background)}" role="link" tabindex="0" aria-label="${escapeHtml(labelText("openThread", { author: profileHandle() }))}"`
     : selectedPostId === rootPost.id ? 'aria-current="true"' : "";
   const parentClassName = [
     "post-thread-parent-main",
@@ -615,7 +672,7 @@ function postTemplate(post, index, isLink, colorOverride, options = {}) {
           data-thread-color="${escapeHtml(options.threadColor || background)}"
           role="link"
           tabindex="0"
-          aria-label="Open thread reply by ${escapeHtml(profileHandle())}"
+          aria-label="${escapeHtml(labelText("openThreadReply", { author: profileHandle() }))}"
           style="background: ${background}; --tilt: ${tilt}deg;"
         >${inner}</article>
       `;
@@ -628,7 +685,7 @@ function postTemplate(post, index, isLink, colorOverride, options = {}) {
         data-post-color="${escapeHtml(background)}"
         role="link"
         tabindex="0"
-        aria-label="Open post by ${escapeHtml(profileHandle())}"
+        aria-label="${escapeHtml(labelText("openPost", { author: profileHandle() }))}"
         style="background: ${background}; --tilt: ${tilt}deg;"
       >${inner}</article>
     `;
@@ -747,14 +804,14 @@ function currentFilterReturnPage() {
 
 function feedFilterTemplate(count) {
   const filterIcon = iconFilter || "";
-  const filterLabel = emojiLabelForIcon(filterIcon) || "icon";
+  const filterLabel = emojiLabelForIcon(filterIcon) || labelText("icon");
   const icon = inlineIconHtml(filterIcon);
-  const label = `${count} ${count === 1 ? "post" : "posts"}`;
+  const label = pluralLabel("postCount", count);
   const clearUrl = feedPageUrl(filterReturnPage, { includeFilter: false });
 
   return `
-    <nav class="feed-filter-nav" aria-label="Feed filter">
-      <a class="feed-filter-pill" href="${clearUrl}" aria-label="Clear ${escapeHtml(filterLabel)} filter">
+    <nav class="feed-filter-nav" aria-label="${escapeHtml(labelText("feedFilter"))}">
+      <a class="feed-filter-pill" href="${clearUrl}" aria-label="${escapeHtml(labelText("clearFilter", { icon: filterLabel }))}">
         <span>${icon} ${escapeHtml(label)}</span>
         <span aria-hidden="true">x</span>
       </a>
@@ -769,7 +826,7 @@ function emptyFilterTemplate() {
       <div class="post-content">
         <div class="handle">${escapeHtml(profileHandle())}</div>
         <p class="post-body">${escapeHtml(labelText("emptyFilter"))}</p>
-        <time class="date">${uiEmojiTemplate("🕒", "")} today</time>
+        <time class="date">${uiEmojiTemplate("🕒", "")} ${escapeHtml(labelText("today"))}</time>
       </div>
     </article>
   `;
@@ -781,22 +838,22 @@ function paginationTemplate(currentPage, pageCount, totalPosts) {
   }
 
   const previousLink = currentPage > 1
-    ? `<a class="feed-pagination-link" href="${feedPageUrl(currentPage - 1)}">${escapeHtml(labelText("previousPost"))}</a>`
-    : `<span class="feed-pagination-link feed-pagination-link-disabled" aria-disabled="true">${escapeHtml(labelText("previousPost"))}</span>`;
+    ? `<a class="feed-pagination-link" href="${feedPageUrl(currentPage - 1)}">${escapeHtml(labelText("previousPage"))}</a>`
+    : `<span class="feed-pagination-link feed-pagination-link-disabled" aria-disabled="true">${escapeHtml(labelText("previousPage"))}</span>`;
   const nextLink = currentPage < pageCount
-    ? `<a class="feed-pagination-link" href="${feedPageUrl(currentPage + 1)}">${escapeHtml(labelText("nextPost"))}</a>`
-    : `<span class="feed-pagination-link feed-pagination-link-disabled" aria-disabled="true">${escapeHtml(labelText("nextPost"))}</span>`;
+    ? `<a class="feed-pagination-link" href="${feedPageUrl(currentPage + 1)}">${escapeHtml(labelText("nextPage"))}</a>`
+    : `<span class="feed-pagination-link feed-pagination-link-disabled" aria-disabled="true">${escapeHtml(labelText("nextPage"))}</span>`;
   const startPost = ((currentPage - 1) * POSTS_PER_PAGE) + 1;
   const endPost = Math.min(currentPage * POSTS_PER_PAGE, totalPosts);
 
   return `
-    <nav class="feed-pagination" aria-label="Feed pagination">
+    <nav class="feed-pagination" aria-label="${escapeHtml(labelText("feedPagination"))}">
       <div class="feed-pagination-count">
-        ${startPost}-${endPost} of ${totalPosts}
+        ${escapeHtml(labelText("postRange", { start: startPost, end: endPost, total: totalPosts }))}
       </div>
       <div class="feed-pagination-links">
         ${previousLink}
-        <span class="feed-pagination-page">Page ${currentPage} of ${pageCount}</span>
+        <span class="feed-pagination-page">${escapeHtml(labelText("pageStatus", { page: currentPage, pages: pageCount }))}</span>
         ${nextLink}
       </div>
     </nav>
@@ -849,7 +906,7 @@ function postBodyTemplate(post, isPreview) {
     && !contentBlocks.some((block) => block.type === "image")
     ? imageBlockTemplate(previewImages[0], isPreview)
     : "";
-  const more = isPreview && isContentClipped(post) ? `<span class="read-more">More inside</span>` : "";
+  const more = isPreview && isContentClipped(post) ? `<span class="read-more">${escapeHtml(labelText("moreInside"))}</span>` : "";
 
   return `<div class="${bodyClass}">${contentMarkup}${imagePreview}${contentImagePreview}${more}</div>`;
 }
@@ -1037,7 +1094,7 @@ function isMarkdownLineEnd(value) {
 
 function codeSnippetTemplate(snippet) {
   const language = snippet.language || "";
-  const label = escapeHtml(snippet.label || language || "Code");
+  const label = escapeHtml(snippet.label || language || labelText("code"));
   const languageData = language ? ` data-language="${escapeHtml(language)}"` : "";
   const languageClass = language ? ` class="language-${escapeHtml(language)}"` : "";
   const content = codeContentHtml(snippet);
@@ -1071,7 +1128,9 @@ function updateCodeWrapControl(snippet) {
   snippet.classList.toggle("post-code-wrapped", wrapped);
   button.hidden = !overflows;
   button.setAttribute("aria-pressed", String(wrapped));
-  button.title = labelText(wrapped ? "unwrapCode" : "wrapCode");
+  const wrapLabel = labelText(wrapped ? "unwrapCode" : "wrapCode");
+  button.title = wrapLabel;
+  button.setAttribute("aria-label", wrapLabel);
 }
 
 function initialiseCodeWrapping() {
@@ -1137,8 +1196,8 @@ function imagePreviewGalleryTemplate(images) {
   const imageMarkup = visibleImages.map((image, index) => {
     const more = index === 3 && extraCount > 0
       ? `
-        <span class="post-image-preview-more" aria-label="${extraCount} more image${extraCount === 1 ? "" : "s"}">
-          +${extraCount}
+        <span class="post-image-preview-more" aria-label="${escapeHtml(pluralLabel("moreImages", extraCount))}">
+          ${escapeHtml(labelText("galleryCount", { count: extraCount }))}
         </span>
       `
       : "";
@@ -1372,13 +1431,13 @@ function videoTemplate(video, isPreview) {
 
   if (isPreview) {
     if (!poster) {
-      return `<div class="video-placeholder">Video</div>`;
+      return `<div class="video-placeholder">${escapeHtml(labelText("video"))}</div>`;
     }
 
     return `
       <span class="video-preview">
-        <img src="${escapeHtml(poster)}" alt="${escapeHtml(video.alt || "Video preview")}" loading="lazy">
-        <span class="play-badge" aria-label="Play video"></span>
+        <img src="${escapeHtml(poster)}" alt="${escapeHtml(video.alt || labelText("videoPreview"))}" loading="lazy">
+        <span class="play-badge" aria-label="${escapeHtml(labelText("playVideo"))}"></span>
       </span>
     `;
   }
@@ -1424,7 +1483,7 @@ function emojiTemplate(post, isFilterable = false) {
         class="post-emoji emoji-filter-button"
         type="button"
         data-icon-filter="${escapeHtml(iconKey)}"
-        aria-label="Filter posts by ${escapedLabel || "this icon"}"
+        aria-label="${escapeHtml(labelText("filterPosts", { icon: label || labelText("thisIcon") }))}"
       >${iconMarkup}</button>
     `;
   }
@@ -1548,7 +1607,7 @@ function formatPostDate(dateString) {
   const diffDays = Math.round((today - postDate) / 86400000);
 
   if (diffDays === 0) {
-    return "today";
+    return labelText("today");
   }
 
   if (diffDays < 0) {
@@ -1556,7 +1615,7 @@ function formatPostDate(dateString) {
   }
 
   if (diffDays < 7) {
-    return `${diffDays} ${diffDays === 1 ? "day" : "days"} ago`;
+    return pluralLabel("daysAgo", diffDays);
   }
 
   return formattedDate(postDate);
@@ -1574,8 +1633,27 @@ function profileHandle() {
   return siteConfig.profile.handle || siteConfig.profile.name || "";
 }
 
-function labelText(key) {
-  return siteConfig.labels?.[key] || defaultConfig.labels[key] || "";
+// Substitute plain values once, then escape at the HTML/attribute insertion point.
+function labelText(key, values = {}) {
+  const configured = siteConfig.labels?.[key];
+  const template = typeof configured === "string" && configured
+    ? configured : defaultConfig.labels[key] || "";
+  return template.replace(/\{([A-Za-z][A-Za-z0-9]*)\}/g, (placeholder, name) => (
+    Object.prototype.hasOwnProperty.call(values, name) ? String(values[name]) : placeholder
+  ));
+}
+
+function pluralLabel(key, count) {
+  let category;
+  try {
+    category = new Intl.PluralRules(siteConfig.site.language || "en").select(count);
+  } catch {
+    category = count === 1 ? "one" : "other";
+  }
+  const categoryKey = `${key}${category[0].toUpperCase()}${category.slice(1)}`;
+  const configured = siteConfig.labels?.[categoryKey];
+  const available = (typeof configured === "string" && configured) || defaultConfig.labels[categoryKey];
+  return labelText(available ? categoryKey : `${key}Other`, { count });
 }
 
 function useOpenMoji() {

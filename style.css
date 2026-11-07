@@ -42,25 +42,38 @@
   --link-preview-image-radius: 12px;
   --control-radius: 999px;
   --font-family: "Source Sans 3", "Source Sans Pro", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-size-base: 20px;
-  --font-size-base-mobile: 18px;
-  --font-size-feed-label: 0.78rem;
+  --font-size-default-text: 20px;
+  --font-size-default-text-mobile: 18px;
   --font-size-profile-heading: 2.2rem;
   --font-size-profile-heading-mobile: 2.2rem;
-  --font-size-feed-heading: clamp(2.2rem, 6vw, 4.5rem);
-  --font-size-profile-body: 1.15rem;
-  --font-size-control: 1rem;
-  --font-size-small: 0.95rem;
-  --font-size-meta: 1rem;
-  --font-size-badge: 0.82rem;
+  --font-size-profile-bio: 1.15rem;
+  --font-size-post-text: clamp(1.3rem, 2.6vw, 1.75rem);
+  --font-size-post-body: clamp(1.02rem, 1.7vw, 1.22rem);
+  --font-size-supporting-text: 1rem;
   --font-size-code: 0.85rem;
-  --font-size-post-body: clamp(1.3rem, 2.6vw, 1.75rem);
-  --font-size-post-body-long: clamp(1.02rem, 1.7vw, 1.22rem);
   --font-size-post-emoji: 3.15rem;
   --font-size-post-emoji-mobile: 2.55rem;
-  --font-size-link-preview-meta: 0.92rem;
-  --font-size-link-preview-title: 1.05rem;
-  --font-size-footer: 0.9rem;
+  /* Optional overrides follow the main sizes unless explicitly configured. */
+  --font-size-navigation-text: var(--font-size-supporting-text);
+  --font-size-post-handle: var(--font-size-supporting-text);
+  --font-size-profile-links: calc(var(--font-size-supporting-text) * 0.95);
+  --font-size-pagination-text: calc(var(--font-size-supporting-text) * 0.95);
+  --font-size-post-date: calc(var(--font-size-supporting-text) * 0.95);
+  --font-size-link-title: calc(var(--font-size-supporting-text) * 1.05);
+  --font-size-link-description: calc(var(--font-size-supporting-text) * 0.92);
+  --font-size-footer-text: calc(var(--font-size-supporting-text) * 0.9);
+  --font-size-video-label: calc(var(--font-size-supporting-text) * 0.9);
+  --font-size-pinned-label: calc(var(--font-size-supporting-text) * 0.82);
+  --font-size-code-label: calc(var(--font-size-supporting-text) * 0.82);
+  --font-size-feed-label: calc(var(--font-size-supporting-text) * 0.78);
+  --font-size-gallery-count: 2.55rem;
+  --font-size-inline-code: 0.78em;
+  --font-size-follow-up-text: calc(var(--font-size-post-text) * 0.8);
+  --font-size-follow-up-body: calc(var(--font-size-post-body) * 0.9);
+  --font-size-follow-up-handle: calc(var(--font-size-post-handle) * 0.88);
+  --font-size-follow-up-date: calc(var(--font-size-post-handle) * 0.88);
+  --font-size-follow-up-emoji: 1.55rem;
+  --font-size-follow-up-emoji-mobile: 1.4rem;
   --post-intro-gap: 0.45rem;
   --post-hover-rotation: -0.8deg;
 }
@@ -89,7 +102,7 @@ body {
   background: var(--page-background);
   color: var(--page-text);
   font-family: var(--font-family);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-default-text);
   line-height: 1.45;
 }
 
@@ -165,17 +178,10 @@ a {
   white-space: nowrap;
 }
 
-.feed-heading h2 {
-  margin: 0;
-  font-size: var(--font-size-feed-heading);
-  line-height: 0.92;
-  letter-spacing: 0;
-}
-
 .profile-card p {
   margin: 0;
   max-width: 29ch;
-  font-size: var(--font-size-profile-body);
+  font-size: var(--font-size-profile-bio);
   font-weight: 600;
 }
 
@@ -204,7 +210,7 @@ a {
   border-radius: var(--control-radius);
   color: var(--page-text);
   background: var(--control-background);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-profile-links);
   font-weight: 800;
   text-decoration: none;
 }
@@ -245,7 +251,7 @@ a {
   color: var(--page-text);
   background: var(--control-background);
   text-decoration: none;
-  font-size: var(--font-size-control);
+  font-size: var(--font-size-navigation-text);
   font-weight: 900;
 }
 
@@ -279,7 +285,7 @@ a {
 .feed-pagination-count,
 .feed-pagination-page {
   color: var(--page-muted-text);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-pagination-text);
   font-weight: 900;
 }
 
@@ -304,7 +310,7 @@ a {
   color: var(--page-text);
   background: var(--control-background);
   text-decoration: none;
-  font-size: var(--font-size-control);
+  font-size: var(--font-size-navigation-text);
   font-weight: 900;
 }
 
@@ -401,21 +407,24 @@ a {
   width: 2.85rem;
   height: 2.85rem;
   border-radius: calc(var(--emoji-radius) * 0.6);
-  font-size: 1.55rem;
+  font-size: var(--font-size-follow-up-emoji);
 }
 
 .post-thread-child .post-body {
-  font-size: calc(var(--font-size-post-body) * 0.8);
+  font-size: var(--font-size-follow-up-text);
   line-height: 1.2;
 }
 
 .post-thread-child .post-body-long .post-paragraph-rest {
-  font-size: calc(var(--font-size-post-body-long) * 0.9);
+  font-size: var(--font-size-follow-up-body);
 }
 
-.post-thread-child .handle,
+.post-thread-child .handle {
+  font-size: var(--font-size-follow-up-handle);
+}
+
 .post-thread-child .date {
-  font-size: calc(var(--font-size-meta) * 0.88);
+  font-size: var(--font-size-follow-up-date);
 }
 
 .post.post-no-emoji {
@@ -519,7 +528,7 @@ a {
 }
 
 .handle {
-  font-size: var(--font-size-meta);
+  font-size: var(--font-size-post-handle);
   font-weight: 900;
 }
 
@@ -531,7 +540,7 @@ a {
   border-radius: var(--control-radius);
   background: var(--post-surface-background);
   color: var(--post-muted-text);
-  font-size: var(--font-size-badge);
+  font-size: var(--font-size-pinned-label);
   font-weight: 900;
   text-transform: uppercase;
 }
@@ -540,7 +549,7 @@ a {
 .post-body {
   min-width: 0;
   overflow-x: clip;
-  font-size: var(--font-size-post-body);
+  font-size: var(--font-size-post-text);
   font-weight: 800;
   line-height: 1.15;
 }
@@ -581,7 +590,7 @@ a {
   color: var(--inverse-text);
   background: var(--inverse-background);
   font-family: "SFMono-Regular", "SF Mono", "Menlo", "Consolas", monospace;
-  font-size: 0.78em;
+  font-size: var(--font-size-inline-code);
   font-weight: 700;
   line-height: 1;
   white-space: break-spaces;
@@ -635,7 +644,7 @@ a {
 }
 
 .post-body-long .post-paragraph-rest {
-  font-size: var(--font-size-post-body-long);
+  font-size: var(--font-size-post-body);
   font-weight: 500;
   line-height: 1.55;
 }
@@ -700,7 +709,7 @@ a {
   display: inline-flex;
   margin-top: 0.85rem;
   color: var(--post-muted-text);
-  font-size: var(--font-size-control);
+  font-size: var(--font-size-navigation-text);
   font-weight: 900;
 }
 
@@ -800,7 +809,7 @@ a {
   border-radius: inherit;
   background: var(--media-overlay-background);
   color: var(--inverse-text);
-  font-size: var(--font-size-post-emoji-mobile);
+  font-size: var(--font-size-gallery-count);
   font-weight: 900;
   line-height: 1;
 }
@@ -842,7 +851,7 @@ a {
   border-bottom: 1px solid var(--inverse-border);
   color: var(--inverse-muted-text);
   background: var(--inverse-surface-background);
-  font-size: var(--font-size-badge);
+  font-size: var(--font-size-code-label);
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -958,7 +967,7 @@ a {
   justify-content: center;
   background: var(--media-overlay-background);
   color: var(--inverse-text);
-  font-size: var(--font-size-footer);
+  font-size: var(--font-size-video-label);
   font-weight: 900;
 }
 
@@ -1037,14 +1046,14 @@ a {
 .link-preview-site,
 .link-preview-description {
   color: var(--post-muted-text);
-  font-size: var(--font-size-link-preview-meta);
+  font-size: var(--font-size-link-description);
   font-weight: 800;
   line-height: 1.1;
   overflow-wrap: anywhere;
 }
 
 .link-preview-title {
-  font-size: var(--font-size-link-preview-title);
+  font-size: var(--font-size-link-title);
   font-weight: 900;
   line-height: 1.1;
   overflow-wrap: anywhere;
@@ -1055,7 +1064,7 @@ a {
   align-items: center;
   gap: 0.35rem;
   color: var(--post-muted-text);
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-post-date);
   font-weight: 800;
 }
 
@@ -1089,7 +1098,7 @@ a {
   padding: 1.25rem 0 2rem;
   border-top: 1px solid var(--page-border);
   color: var(--page-muted-text);
-  font-size: var(--font-size-footer);
+  font-size: var(--font-size-footer-text);
   font-weight: 600;
 }
 
@@ -1152,7 +1161,7 @@ a {
 
 @media (max-width: 560px) {
   body {
-    font-size: var(--font-size-base-mobile);
+    font-size: var(--font-size-default-text-mobile);
   }
 
   .post {
@@ -1177,7 +1186,7 @@ a {
   .post-thread-child .post-emoji {
     width: 2.55rem;
     height: 2.55rem;
-    font-size: 1.4rem;
+    font-size: var(--font-size-follow-up-emoji-mobile);
   }
 
   .post-emoji {

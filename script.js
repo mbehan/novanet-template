@@ -9,20 +9,36 @@ const CODE_TOKEN_TYPES = [
 // Missing config settings use these fallbacks; arrays such as links are replaced.
 const defaultConfig = {
   site: {
-    title: "Personal Website",
-    description: "",
-    language: "en"
+    title: "Your site name",
+    description: "Your home on the internet.",
+    url: "https://example.com",
+    language: "en-IE"
   },
   profile: {
-    name: "",
-    handle: "@you",
-    bio: "",
-    photoAlt: "Profile photo",
-    location: "",
-    links: []
+    name: "Your name here",
+    handle: "",
+    bio: "A little about you can go here.",
+    photoAlt: "Placeholder silhouette for your profile photo",
+    location: "Your location",
+    links: [
+      {
+        label: "RSS",
+        url: "feeds/rss.xml",
+        emoji: "🛰️"
+      },
+      {
+        label: "JSON Feed",
+        url: "feeds/feed.json",
+        emoji: "🛰️"
+      }
+    ]
   },
   assets: {
-    profilePhoto: "assets/profile.jpg"
+    profilePhoto: "assets/site/profile-placeholder.jpg",
+    favicon32: "assets/site/favicons/favicon-32.png",
+    favicon16: "assets/site/favicons/favicon-16.png",
+    appleTouchIcon: "assets/site/favicons/apple-touch-icon.png",
+    shortcutIcon: "assets/site/favicons/favicon.ico"
   },
   features: {
     openmoji: true,
@@ -34,7 +50,8 @@ const defaultConfig = {
   },
   theme: {
     colorScheme: "dark",
-    fontFamily: "system-ui, sans-serif",
+    fontFamily: "\"Source Sans 3\", \"Source Sans Pro\", system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif",
+    fontStylesheet: "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700;800;900&display=swap",
     colors: {
       pageBackground: "#292a2b",
       pageText: "#f7f2e8",
@@ -61,8 +78,8 @@ const defaultConfig = {
     fontSizes: {
       defaultText: "20px",
       defaultTextMobile: "18px",
-      profileHeading: "2.2rem",
-      profileHeadingMobile: "2.2rem",
+      profileHeading: "clamp(2.2rem, 3.7vw, 3.2rem)",
+      profileHeadingMobile: "clamp(2.1rem, 11vw, 3.6rem)",
       profileBio: "1.15rem",
       postText: "clamp(1.3rem, 2.6vw, 1.75rem)",
       postBody: "clamp(1.02rem, 1.7vw, 1.22rem)",
@@ -81,7 +98,18 @@ const defaultConfig = {
       linkPreviewImage: "12px",
       control: "999px"
     },
-    postBackgrounds: ["#f8d66d"]
+    postBackgrounds: [
+      "#f8d66d",
+      "#9ee6c9",
+      "#ffb3ba",
+      "#b8d8ff",
+      "#ffd0a6",
+      "#c9f284",
+      "#f5c2ff",
+      "#ace7ef",
+      "#ffef99",
+      "#d7c7ff"
+    ]
   },
   labels: {
     latestPosts: "latest posts",
@@ -232,7 +260,7 @@ function mergeConfig(base, override) {
 }
 
 function applyConfig(config) {
-  document.documentElement.lang = config.site.language || "en";
+  document.documentElement.lang = config.site.language || defaultConfig.site.language;
   document.documentElement.style.colorScheme = config.theme.colorScheme || "dark";
   document.title = config.site.title || document.title;
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", config.theme.colors.pageBackground);
@@ -1622,7 +1650,7 @@ function formatPostDate(dateString) {
 }
 
 function formattedDate(date) {
-  return date.toLocaleDateString(siteConfig.site.language || "en", {
+  return date.toLocaleDateString(siteConfig.site.language || defaultConfig.site.language, {
     day: "numeric",
     month: "short",
     year: "numeric"
@@ -1646,7 +1674,7 @@ function labelText(key, values = {}) {
 function pluralLabel(key, count) {
   let category;
   try {
-    category = new Intl.PluralRules(siteConfig.site.language || "en").select(count);
+    category = new Intl.PluralRules(siteConfig.site.language || defaultConfig.site.language).select(count);
   } catch {
     category = count === 1 ? "one" : "other";
   }

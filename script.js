@@ -343,6 +343,7 @@ function applyTheme(theme) {
     "--font-size-link-description": overrides.linkDescription,
     "--font-size-footer-text": overrides.footerText,
     "--font-size-video-label": overrides.videoLabel,
+    "--font-size-media-caption": overrides.mediaCaption,
     "--font-size-pinned-label": overrides.pinnedLabel,
     "--font-size-code-label": overrides.codeLabel,
     "--font-size-feed-label": overrides.feedLabel,
@@ -904,6 +905,8 @@ function postBodyTemplate(post, isPreview) {
   const previewImageSources = new Set(previewImages.map((image) => image.src));
   const hasMultipleParagraphs = countParagraphBlocks(post) > 1;
   const bodyClass = !isPreview && hasMultipleParagraphs ? "post-body post-body-long" : "post-body";
+  const fullBlocks = normalizeContentBlocks(post.content);
+  const isPhotoPost = fullBlocks.length === 1 && ["image", "video"].includes(fullBlocks[0].type);
   let paragraphIndex = -1;
   let renderedImagePreview = false;
   const contentMarkup = contentBlocks.map((block) => {
@@ -924,7 +927,7 @@ function postBodyTemplate(post, isPreview) {
       return imagePreviewGalleryTemplate(previewImages);
     }
 
-    return contentBlockTemplate(block, paragraphIndex, isPreview);
+    return contentBlockTemplate(block, paragraphIndex, isPreview, isPhotoPost);
   }).join("");
   const imagePreview = isPreview && previewImages.length > 1 && !renderedImagePreview
     ? imagePreviewGalleryTemplate(previewImages)
@@ -939,17 +942,17 @@ function postBodyTemplate(post, isPreview) {
   return `<div class="${bodyClass}">${contentMarkup}${imagePreview}${contentImagePreview}${more}</div>`;
 }
 
-function contentBlockTemplate(block, paragraphIndex, isPreview) {
+function contentBlockTemplate(block, paragraphIndex, isPreview, isPhotoPost = false) {
   if (block.type === "code") {
     return codeSnippetTemplate(block);
   }
 
   if (block.type === "image") {
-    return imageBlockTemplate(block, isPreview);
+    return mediaCaptionTemplate(block, imageBlockTemplate(block, isPreview), isPreview, isPhotoPost);
   }
 
   if (block.type === "video") {
-    return videoBlockTemplate(block, isPreview);
+    return mediaCaptionTemplate(block, videoBlockTemplate(block, isPreview), isPreview, isPhotoPost);
   }
 
   if (block.type === "link") {
@@ -1206,6 +1209,20 @@ function codeContentHtml(snippet) {
   ).join("");
 }
 
+// Captions describe the media visibly; alt text remains independent.
+function mediaCaptionTemplate(block, mediaMarkup, isPreview, isPhotoPost) {
+  if (!block.caption || (isPreview && !isPhotoPost)) {
+    return mediaMarkup;
+  }
+
+  const classes = ["post-media", `post-media-${block.type}`, isPreview ? "post-media-overlay" : ""].filter(Boolean).join(" ");
+  return `<figure class="${classes}">${mediaMarkup}<figcaption class="post-media-caption">${escapeHtml(block.caption)}</figcaption></figure>`;
+}
+
+function mediaCaption(value) {
+  return typeof value === "string" && value.trim() ? value : "";
+}
+
 function imageBlockTemplate(image, isPreview) {
   const src = escapeHtml(image.src || "");
   const alt = escapeHtml(image.alt || "");
@@ -1349,6 +1366,7 @@ function normalizeContentBlocks(value) {
       return [{
         type: "image",
         src: block.src || "",
+        caption: mediaCaption(block.caption),
         alt: block.alt || ""
       }];
     }
@@ -1357,6 +1375,7 @@ function normalizeContentBlocks(value) {
       return [{
         type: "video",
         src: block.src || "",
+        caption: mediaCaption(block.caption),
         alt: block.alt || "",
         typeHint: block.typeHint || "",
         poster: block.poster || ""

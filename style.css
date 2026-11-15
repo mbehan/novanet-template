@@ -63,6 +63,7 @@
   --font-size-link-description: calc(var(--font-size-supporting-text) * 0.92);
   --font-size-footer-text: calc(var(--font-size-supporting-text) * 0.9);
   --font-size-video-label: calc(var(--font-size-supporting-text) * 0.9);
+  --font-size-media-caption: calc(var(--font-size-supporting-text) * 0.9);
   --font-size-pinned-label: calc(var(--font-size-supporting-text) * 0.82);
   --font-size-code-label: calc(var(--font-size-supporting-text) * 0.82);
   --font-size-feed-label: calc(var(--font-size-supporting-text) * 0.78);
@@ -749,6 +750,79 @@ a {
 .post-detail .post-content-image-link .post-content-image,
 .post-detail .post-body > .post-content-image {
   width: 100%;
+}
+
+/* Captions use existing supporting text and semantic colour roles. */
+.post-media {
+  margin: 0;
+  width: min(100%, 420px);
+  min-width: 0;
+}
+
+.post-detail .post-media-image {
+  width: 100%;
+}
+
+.post-body .post-media img,
+.post-media .post-content-video {
+  width: 100%;
+  margin-top: 0;
+}
+
+.post-media-caption {
+  margin-top: 0.5rem;
+  color: var(--post-muted-text);
+  font-size: var(--font-size-media-caption);
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Sharing a grid cell keeps even a long caption within the media's bounds. */
+.post-media-overlay {
+  display: grid;
+  overflow: hidden;
+  border-radius: var(--media-radius);
+}
+
+.post-media-overlay > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+.post-media-overlay > .post-content-image {
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-media-overlay .post-media-caption {
+  align-self: end;
+  z-index: 1;
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  background: var(--media-overlay-background);
+  color: var(--inverse-text);
+}
+
+/* Keep the video affordance clear of the caption. */
+.post-media-overlay .play-badge {
+  top: 0.75rem;
+  bottom: auto;
+}
+
+.post-media-overlay .video-placeholder {
+  display: flex;
+  width: 100%;
+  min-height: 10rem;
+  margin: 0;
+  padding-bottom: 3rem;
+  border-radius: 0;
+}
+
+.post-body > .post-media + *,
+.post-body > * + .post-media {
+  margin-top: var(--post-block-gap);
 }
 
 /* Feed image galleries */
